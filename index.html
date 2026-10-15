@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="私人使用的香港超市价格比较工具" />
+    <title>街市眼 · 香港超市价格表</title>
+    <link rel="icon" href="./public/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./public/styles.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="街市眼首页">
+        <span class="brand-mark" aria-hidden="true">價</span>
+        <span>
+          <strong>街市眼</strong>
+          <small>HK PRICE BENCHMARK</small>
+        </span>
+      </a>
+      <div class="live-pill" id="sourceStatus">
+        <span class="status-dot"></span>
+        <span>正在载入离线资料</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">MY GROCERY DESK · 私人使用</p>
+          <h1>今天买贵了吗？</h1>
+          <p class="intro">把百佳、惠康和 Market Place 放在同一张价格表里。先看清楚，再决定去哪里买。</p>
+        </div>
+
+        <div class="summary-card" aria-label="数据概览">
+          <div>
+            <span class="summary-label">收录商品</span>
+            <strong id="totalProducts">—</strong>
+          </div>
+          <div>
+            <span class="summary-label">目标超市</span>
+            <strong>3</strong>
+          </div>
+          <div>
+            <span class="summary-label">资料时间</span>
+            <strong id="updatedAt">同步中</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace" aria-labelledby="price-table-title">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <label for="search">搜索商品</label>
+            <div class="search-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+              <input id="search" type="search" placeholder="试试：牛奶、可乐、嘉顿…" autocomplete="off" />
+              <kbd>⌘ K</kbd>
+            </div>
+          </div>
+
+          <div class="filter-wrap">
+            <label for="category">商品分类</label>
+            <select id="category">
+              <option value="">全部分类</option>
+            </select>
+          </div>
+
+          <button class="sync-button" id="syncButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-14.9 4M4 12A8 8 0 0 1 18.9 8M5 17H2v3M19 7h3V4"/></svg>
+            重新载入
+          </button>
+        </div>
+
+        <div class="table-heading">
+          <div>
+            <p class="eyebrow">DAILY PRICE SHEET</p>
+            <h2 id="price-table-title">超市价格比较</h2>
+          </div>
+          <p id="resultSummary">正在整理价格…</p>
+        </div>
+
+        <div class="retailer-key" aria-label="超市栏说明">
+          <span><i class="key-dot park"></i>百佳</span>
+          <span><i class="key-dot wellcome"></i>惠康</span>
+          <span><i class="key-dot market"></i>Market Place</span>
+          <span class="cheapest-key">绿色价格 = 当前最低</span>
+        </div>
+
+        <div class="notice hidden" id="notice" role="status"></div>
+
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">商品</th>
+                <th scope="col">百佳</th>
+                <th scope="col">惠康</th>
+                <th scope="col">Market Place</th>
+                <th scope="col">价差</th>
+              </tr>
+            </thead>
+            <tbody id="priceRows">
+              <tr class="loading-row"><td colspan="5"><span class="spinner"></span>正在读取消委会公开数据…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state hidden" id="emptyState">
+          <span>找不到</span>
+          <h3>没有符合条件的商品</h3>
+          <p>换一个较短的关键词，或清除分类筛选再试。</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>价格只作个人参考，实际售价及优惠以零售商结账页面为准。资料快照：2026年10月15日 下午12:00</p>
+      <a href="https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json" target="_blank" rel="noreferrer">资料来源：香港消费者委员会</a>
+    </footer>
+
+    <script src="./site-data/prices-0.js"></script><script src="./site-data/prices-1.js"></script><script src="./site-data/prices-2.js"></script><script src="./site-data/prices-3.js"></script><script src="./site-data/prices-4.js"></script><script src="./site-data/prices-5.js"></script><script src="./site-data/prices-6.js"></script><script src="./site-data/prices-7.js"></script><script src="./site-data/prices-8.js"></script><script src="./site-data/prices-9.js"></script><script src="./site-data/prices-10.js"></script><script src="./site-data/prices-11.js"></script><script src="./site-data/prices-12.js"></script><script src="./site-data/prices-13.js"></script><script src="./site-data/prices-14.js"></script><script src="./site-data/prices-15.js"></script><script src="./site-data/prices-16.js"></script><script src="./site-data/prices-17.js"></script><script src="./site-data/prices-18.js"></script><script src="./site-data/prices-19.js"></script><script src="./site-data/prices-20.js"></script><script src="./site-data/prices-21.js"></script><script src="./site-data/prices-22.js"></script><script src="./site-data/prices-23.js"></script><script src="./site-data/prices-24.js"></script><script src="./site-data/prices-25.js"></script><script src="./site-data/adapter.js"></script><script type="module" src="./site-data/app.js"></script>
+  </body>
+</html>
