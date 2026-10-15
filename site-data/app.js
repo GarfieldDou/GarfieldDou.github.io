@@ -54,9 +54,16 @@ function setStatus(kind, text) {
 function priceCell(price, minimum) {
   if (!price) return '<span class="price-missing">—</span>';
   const isCheapest = price.price === minimum;
+  const official = price.official;
+  const sourceLine = official
+    ? `<a class="official-price" href="${escapeHtml(official.url)}" target="_blank" rel="noreferrer">官网 $${official.price.toFixed(2)}</a>
+       <small class="source-time">${escapeHtml(official.sourceLabel)} · ${formatDate(official.observedAt)}</small>
+       <small class="benchmark-price">消委会基准 $${price.price.toFixed(2)}</small>`
+    : `<small class="source-time">消委会 · 每日更新</small>`;
   return `
     <span class="price ${isCheapest ? "cheapest" : ""}">$${price.price.toFixed(2)}</span>
     ${price.offer ? `<small class="offer">${escapeHtml(price.offer)}</small>` : ""}
+    ${sourceLine}
   `;
 }
 
@@ -123,7 +130,10 @@ async function loadPrices({ refresh = false } = {}) {
     elements.updatedAt.textContent = formatDate(data.updatedAt);
     elements.resultSummary.textContent = `目前显示 ${data.resultCount} 项 · 最多显示 80 项`;
 
-    const statusText = data.source === "portable" ? "离线资料已载入" : data.source === "live" ? "官方数据已同步" : data.source === "cache" ? "使用本机缓存" : "使用较早缓存";
+    const officialCount = data.sources?.find((source) => source.id === "wellcome")?.matchedProducts || 0;
+    const statusText = officialCount > 0
+      ? `消委会 + 惠康官网 · ${officialCount}项`
+      : data.source === "live" ? "官方数据已同步" : data.source === "cache" ? "使用本机缓存" : "使用较早缓存";
     setStatus(data.source === "stale-cache" ? "error" : "ready", statusText);
 
     if (data.warning) {

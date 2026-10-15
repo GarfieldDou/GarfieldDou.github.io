@@ -196,6 +196,7 @@ kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); bo
 .key-dot.wellcome { background: var(--yellow); }
 .key-dot.market { background: var(--blue); }
 .retailer-key .cheapest-key { margin-left: auto; color: var(--green); font-weight: 650; }
+.retailer-key .official-key { color: #7a4e11; font-weight: 650; }
 
 .notice { margin-bottom: 16px; border: 1px solid #e1c16b; border-radius: 9px; padding: 11px 14px; background: #fff8df; color: #6d571b; font-size: 12px; }
 .hidden { display: none !important; }
@@ -216,6 +217,21 @@ tbody tr:hover { background: #faf9f4; }
 .price.cheapest { background: var(--green-light); color: var(--green); }
 .price-missing { color: #b7bbb8; }
 .offer { display: block; max-width: 145px; margin-top: 5px; color: #a04823; font-size: 9px; line-height: 1.35; }
+.official-price {
+  display: block;
+  width: fit-content;
+  margin-top: 7px;
+  border-radius: 5px;
+  padding: 3px 6px;
+  background: #fff0c8;
+  color: #6f470f;
+  font-size: 10px;
+  font-weight: 750;
+  text-decoration: none;
+}
+.official-price:hover { background: #f8dfa0; }
+.source-time, .benchmark-price { display: block; margin-top: 4px; color: #858c89; font-size: 8px; line-height: 1.35; }
+.benchmark-price { margin-top: 2px; }
 .spread { color: var(--muted); font: 650 12px/1 system-ui, sans-serif; }
 .spread.has-saving { color: var(--red); }
 
@@ -231,6 +247,7 @@ tbody tr:hover { background: #faf9f4; }
 footer { max-width: 1440px; margin: 0 auto; padding: 0 clamp(24px, 5vw, 72px) 40px; display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 11px; }
 footer p { margin: 0; }
 footer a { color: inherit; }
+.footer-sources { white-space: nowrap; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: 30px; padding-top: 24px; }
@@ -302,6 +319,7 @@ footer a { color: inherit; }
     text-align: right;
   }
   .offer { margin: 5px auto 0; }
+  .official-price { margin: 7px auto 0; }
   .loading-row { display: block; }
   .loading-row td { display: block; width: 100%; }
   footer { flex-direction: column; }

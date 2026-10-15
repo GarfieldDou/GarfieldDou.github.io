@@ -33,6 +33,7 @@ const retailerDictionary = ["PARKNSHOP", "WELLCOME", "JASONS"];
 const compactDataset = {
   updatedAt: dataset.updatedAt,
   sourceUrl: dataset.sourceUrl,
+  sources: dataset.sources || [],
   source: dataset.source,
   categories: categoryDictionary,
   subcategories: subcategoryDictionary,
@@ -43,7 +44,19 @@ const compactDataset = {
     product.name,
     categoryDictionary.indexOf(product.category),
     subcategoryDictionary.indexOf(product.subcategory),
-    product.prices.map((price) => [retailerDictionary.indexOf(price.retailer), price.price, price.offer]),
+    product.prices.map((price) => [
+      retailerDictionary.indexOf(price.retailer),
+      price.price,
+      price.offer,
+      price.official ? [
+        price.official.price,
+        price.official.listPrice,
+        price.official.url,
+        price.official.observedAt,
+        price.official.sourceLabel,
+        price.official.scope,
+      ] : null,
+    ]),
   ]),
 };
 
@@ -72,7 +85,19 @@ const __allProducts = window.__PRICE_DATA__.products.map((product) => ({
   name: product[2],
   category: window.__PRICE_DATA__.categories[product[3]],
   subcategory: window.__PRICE_DATA__.subcategories[product[4]],
-  prices: product[5].map((price) => ({ retailer: window.__PRICE_DATA__.retailers[price[0]], price: price[1], offer: price[2] })),
+  prices: product[5].map((price) => ({
+    retailer: window.__PRICE_DATA__.retailers[price[0]],
+    price: price[1],
+    offer: price[2],
+    official: price[3] ? {
+      price: price[3][0],
+      listPrice: price[3][1],
+      url: price[3][2],
+      observedAt: price[3][3],
+      sourceLabel: price[3][4],
+      scope: price[3][5],
+    } : null,
+  })),
 }));
 const __nativeFetch = window.fetch.bind(window);
 window.fetch = async (input, init) => {
@@ -103,6 +128,7 @@ window.fetch = async (input, init) => {
   return new Response(JSON.stringify({
     updatedAt: window.__PRICE_DATA__.updatedAt,
     source: 'portable',
+    sources: window.__PRICE_DATA__.sources || [],
     warning: null,
     totalProducts: allProducts.length,
     resultCount: products.length,
