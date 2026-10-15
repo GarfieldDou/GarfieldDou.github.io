@@ -2,4 +2,4 @@
 
 比较百佳、惠康与 Market Place 的香港超市价格。页面是一个可离线打开的单文件网站，价格资料来自香港消费者委员会公开数据。
 
-数据会通过 GitHub Actions 定期更新。
+GitHub Actions 每天下午 2:30（香港时间）刷新数据并重新生成 `index.html`。
