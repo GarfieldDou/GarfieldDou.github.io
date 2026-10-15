@@ -65,6 +65,15 @@
             </select>
           </div>
 
+          <div class="sort-wrap">
+            <label for="sort">排序</label>
+            <select id="sort">
+              <option value="price-asc">价格：低至高</option>
+              <option value="price-desc">价格：高至低</option>
+              <option value="name">商品名称</option>
+            </select>
+          </div>
+
           <button class="sync-button" id="syncButton" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-14.9 4M4 12A8 8 0 0 1 18.9 8M5 17H2v3M19 7h3V4"/></svg>
             更新数据
@@ -83,7 +92,7 @@
           <span><i class="key-dot park"></i>百佳</span>
           <span><i class="key-dot wellcome"></i>惠康</span>
           <span><i class="key-dot market"></i>Market Place</span>
-          <span class="official-key">官网价格会另行标示</span>
+          <span class="official-key">官网独有商品也会列出</span>
           <span class="cheapest-key">绿色价格 = 当前最低</span>
         </div>
 
@@ -115,7 +124,7 @@
     </main>
 
     <footer>
-      <p>价格只作个人参考，官网价格可能因送货地区、会员身份及组合优惠而变化。</p>
+      <p>单位价格按商品名称中的数量及净重自动换算；官网价格可能因送货地区、会员身份及组合优惠而变化。</p>
       <p class="footer-sources"><a href="https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json" target="_blank" rel="noreferrer">消委会</a> · <a href="https://www.wellcome.com.hk/zh-hant/" target="_blank" rel="noreferrer">惠康官网</a></p>
     </footer>
 

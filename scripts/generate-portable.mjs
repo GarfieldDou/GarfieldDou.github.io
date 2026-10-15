@@ -55,8 +55,13 @@ const compactDataset = {
         price.official.observedAt,
         price.official.sourceLabel,
         price.official.scope,
+        price.official.offer || "",
+        price.official.effectivePrice ?? null,
+        price.official.promotionQuantity ?? null,
+        price.official.productId || "",
       ] : null,
     ]),
+    product.sourceOnly || null,
   ]),
 };
 
@@ -85,6 +90,7 @@ const __allProducts = window.__PRICE_DATA__.products.map((product) => ({
   name: product[2],
   category: window.__PRICE_DATA__.categories[product[3]],
   subcategory: window.__PRICE_DATA__.subcategories[product[4]],
+  sourceOnly: product[6],
   prices: product[5].map((price) => ({
     retailer: window.__PRICE_DATA__.retailers[price[0]],
     price: price[1],
@@ -96,6 +102,10 @@ const __allProducts = window.__PRICE_DATA__.products.map((product) => ({
       observedAt: price[3][3],
       sourceLabel: price[3][4],
       scope: price[3][5],
+      offer: price[3][6],
+      effectivePrice: price[3][7],
+      promotionQuantity: price[3][8],
+      productId: price[3][9],
     } : null,
   })),
 }));
@@ -107,23 +117,32 @@ window.fetch = async (input, init) => {
   const params = new URL(requestUrl, 'https://portable.local').searchParams;
   const query = (params.get('q') || '').trim().toLocaleLowerCase('zh-Hant');
   const category = params.get('category') || '';
+  const sort = params.get('sort') || 'price-asc';
   const limit = Math.min(Math.max(Number(params.get('limit')) || 80, 1), 200);
   const allProducts = __allProducts;
   const categories = [...new Set(allProducts.map((product) => product.category))].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
-  const products = [];
+  const matches = [];
 
   for (const product of allProducts) {
     if (category && product.category !== category) continue;
-    if (!query && product.prices.length < 2) continue;
+    if (!query && product.prices.length < 2 && !product.sourceOnly) continue;
     if (query) {
       const haystack = [product.code, product.brand, product.brandEn, product.name, product.nameEn, product.category, product.subcategory]
         .join(' ')
         .toLocaleLowerCase('zh-Hant');
       if (!haystack.includes(query)) continue;
     }
-    products.push(product);
-    if (products.length >= limit) break;
+    matches.push(product);
   }
+
+  const effectivePrice = (price) => price.official?.effectivePrice ?? price.price;
+  const lowestPrice = (product) => Math.min(...product.prices.map(effectivePrice));
+  matches.sort((a, b) => {
+    if (sort === 'price-desc') return lowestPrice(b) - lowestPrice(a);
+    if (sort === 'name') return a.name.localeCompare(b.name, 'zh-Hant');
+    return lowestPrice(a) - lowestPrice(b);
+  });
+  const products = matches.slice(0, limit);
 
   return new Response(JSON.stringify({
     updatedAt: window.__PRICE_DATA__.updatedAt,

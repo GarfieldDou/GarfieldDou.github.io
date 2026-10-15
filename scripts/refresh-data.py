@@ -18,9 +18,21 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "pricewatch-cache.json"
 SOURCE_URL = "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
 TARGET_RETAILERS = {"PARKNSHOP", "WELLCOME", "JASONS"}
-WELLCOME_CATEGORY_URL = "https://www.wellcome.com.hk/zh-hant/category/100002-100063/{page}.html"
 WELLCOME_ORIGIN = "https://www.wellcome.com.hk"
-WELLCOME_PAGES = 8
+WELLCOME_CATEGORIES = [
+    {
+        "url": "https://www.wellcome.com.hk/zh-hant/category/100002-100063/{page}.html",
+        "category": "奶類及乳製品 / 大豆製品 / 蛋類",
+        "subcategory": "牛奶 / 牛奶飲品",
+    },
+    {
+        "url": "https://www.wellcome.com.hk/zh-hant/category/100004-100082-100589/{page}.html",
+        "category": "米 / 食油 / 罐頭 / 蔬果 / 肉類",
+        "subcategory": "罐頭食品",
+    },
+]
+WELLCOME_PAGES_PER_CATEGORY = 12
+WELLCOME_PROMOTION_PRODUCT_IDS = {"101360521"}
 WELLCOME_PRODUCT_PATTERN = re.compile(
     r'<a href="(?P<url>/zh-hant/wellcome/p/[^"]+\.html)"[^>]*>'
     r'.*?<div class="promo"[^>]*>(?P<name>.*?)</div>.*?</a>\s*'
@@ -29,6 +41,11 @@ WELLCOME_PRODUCT_PATTERN = re.compile(
     r'<div class="current-price"[^>]*>\s*'
     r'<div class="price"[^>]*>\$(?P<major>[^<]+)</div>\s*'
     r'<div class="small-price"[^>]*>(?P<minor>[^<]*)</div>',
+    re.DOTALL,
+)
+WELLCOME_OFFER_PATTERN = re.compile(
+    r'<div class="tag new-user-tag"[^>]*>(?P<label>.*?)</div>\s*'
+    r'<div class="info"[^>]*>(?P<detail>.*?)</div>',
     re.DOTALL,
 )
 
@@ -106,49 +123,85 @@ def package_sizes(value):
     return sizes
 
 
+def fetch_wellcome_offer(product_url):
+    request = urllib.request.Request(
+        product_url,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; HK-Price-Benchmark/1.2)"},
+    )
+    with urllib.request.urlopen(request, timeout=60) as response:
+        document = response.read().decode("utf-8")
+    match = WELLCOME_OFFER_PATTERN.search(document)
+    if not match:
+        return {}
+    offer = strip_html(match.group("label"))
+    quantity_price = re.search(r"(\d+)\s*件\s*\$\s*(\d+(?:\.\d+)?)", offer)
+    if not quantity_price:
+        return {"offer": offer}
+    quantity = int(quantity_price.group(1))
+    total = float(quantity_price.group(2))
+    return {
+        "offer": offer,
+        "promotionQuantity": quantity,
+        "promotionTotal": total,
+        "effectivePrice": round(total / quantity, 4),
+    }
+
+
 def fetch_wellcome_products(observed_at):
     products = []
     seen_urls = set()
-    for page in range(1, WELLCOME_PAGES + 1):
-        source_url = WELLCOME_CATEGORY_URL.format(page=page)
-        request = urllib.request.Request(
-            source_url,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; HK-Price-Benchmark/1.1)"},
-        )
-        with urllib.request.urlopen(request, timeout=60) as response:
-            document = response.read().decode("utf-8")
+    for category in WELLCOME_CATEGORIES:
+        for page in range(1, WELLCOME_PAGES_PER_CATEGORY + 1):
+            source_url = category["url"].format(page=page)
+            request = urllib.request.Request(
+                source_url,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; HK-Price-Benchmark/1.2)"},
+            )
+            with urllib.request.urlopen(request, timeout=60) as response:
+                document = response.read().decode("utf-8")
 
-        page_products = list(WELLCOME_PRODUCT_PATTERN.finditer(document))
-        if not page_products:
-            break
-        for match in page_products:
-            major = strip_html(match.group("major"))
-            minor = strip_html(match.group("minor"))
-            try:
-                price = float(f"{major}{minor}")
-            except ValueError:
-                continue
+            page_products = list(WELLCOME_PRODUCT_PATTERN.finditer(document))
+            if not page_products:
+                break
+            for match in page_products:
+                major = strip_html(match.group("major"))
+                minor = strip_html(match.group("minor"))
+                try:
+                    price = float(f"{major}{minor}")
+                except ValueError:
+                    continue
 
-            list_price_text = strip_html(match.group("list_price")).replace("$", "")
-            try:
-                list_price = float(list_price_text) if list_price_text else None
-            except ValueError:
-                list_price = None
+                list_price_text = strip_html(match.group("list_price")).replace("$", "")
+                try:
+                    list_price = float(list_price_text) if list_price_text else None
+                except ValueError:
+                    list_price = None
 
-            product_url = urljoin(WELLCOME_ORIGIN, html.unescape(match.group("url")))
-            if product_url in seen_urls:
-                continue
-            seen_urls.add(product_url)
-            products.append(
-                {
+                product_url = urljoin(WELLCOME_ORIGIN, html.unescape(match.group("url")))
+                if product_url in seen_urls:
+                    continue
+                seen_urls.add(product_url)
+                product_id_match = re.search(r"/i/(\d+)\.html", product_url)
+                product_id = product_id_match.group(1) if product_id_match else ""
+                product = {
+                    "productId": product_id,
                     "name": strip_html(match.group("name")),
                     "price": price,
                     "listPrice": list_price,
                     "url": product_url,
                     "observedAt": observed_at,
+                    "category": category["category"],
+                    "subcategory": category["subcategory"],
                 }
-            )
+                if product_id in WELLCOME_PROMOTION_PRODUCT_IDS:
+                    product.update(fetch_wellcome_offer(product_url))
+                products.append(product)
     return products
+
+
+def guessed_brand(name):
+    first = re.split(r"\s+", name.strip(), maxsplit=1)[0]
+    return first if len(first) <= 24 else "惠康官网商品"
 
 
 def match_wellcome_product(official_product, products):
@@ -220,19 +273,49 @@ try:
         if any(price["retailer"] == "WELLCOME" for price in product["prices"])
     ]
     matched = 0
+    official_only = 0
     for official_product in wellcome_products:
         result = match_wellcome_product(official_product, products)
-        if not result:
+        if result:
+            _, price, confidence = result
+            price["official"] = {
+                **official_product,
+                "source": "wellcome.com.hk",
+                "sourceLabel": "惠康官网",
+                "scope": "未设送货地址的官网公开价",
+                "matchConfidence": confidence,
+            }
+            matched += 1
             continue
-        _, price, confidence = result
-        price["official"] = {
+
+        official_only += 1
+        official = {
             **official_product,
             "source": "wellcome.com.hk",
             "sourceLabel": "惠康官网",
             "scope": "未设送货地址的官网公开价",
-            "matchConfidence": confidence,
+            "matchConfidence": None,
         }
-        matched += 1
+        products.append(
+            {
+                "code": f"WELLCOME-{official_product['productId']}",
+                "brand": guessed_brand(official_product["name"]),
+                "brandEn": "",
+                "name": official_product["name"],
+                "nameEn": "",
+                "category": official_product["category"],
+                "subcategory": official_product["subcategory"],
+                "sourceOnly": "wellcome",
+                "prices": [
+                    {
+                        "retailer": "WELLCOME",
+                        "price": official_product["price"],
+                        "offer": "",
+                        "official": official,
+                    }
+                ],
+            }
+        )
     sources.append(
         {
             "id": "wellcome",
@@ -242,10 +325,11 @@ try:
             "status": "connected",
             "matchedProducts": matched,
             "observedProducts": len(wellcome_products),
-            "unmatchedOfficialProducts": max(len(wellcome_products) - matched, 0),
+            "officialOnlyProducts": official_only,
+            "unmatchedOfficialProducts": official_only,
             "benchmarkCategoryProducts": len(milk_benchmark_products),
             "benchmarkWellcomeProducts": len(milk_benchmark_wellcome_products),
-            "scope": "鲜奶分类试运行",
+            "scope": "鲜奶、罐装海鲜分类试运行",
         }
     )
 except Exception as error:  # The benchmark must still refresh if a retailer blocks a request.
@@ -283,6 +367,7 @@ OUTPUT.write_text(
 )
 wellcome_source = next(source for source in sources if source["id"] == "wellcome")
 print(
-    f"Refreshed {len(products)} benchmark products; "
-    f"matched {wellcome_source.get('matchedProducts', 0)} Wellcome website prices"
+    f"Refreshed {len(products)} total products; "
+    f"matched {wellcome_source.get('matchedProducts', 0)} Wellcome website prices; "
+    f"added {wellcome_source.get('officialOnlyProducts', 0)} official-only products"
 )
