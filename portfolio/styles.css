@@ -201,24 +201,60 @@ button { font: inherit; }
 .section-kicker p, .work-header .mono, .contact-section > .mono { margin: 0 0 1.5rem; font-size: .68rem; }
 .section-kicker h2 { max-width: 8ch; margin: 0; font: 700 clamp(2.5rem, 4vw, 4.5rem)/.9 var(--display); letter-spacing: -.065em; }
 .practice-row {
+  width: 100%;
   display: grid;
-  grid-template-columns: 50px 1fr auto;
+  grid-template-columns: 50px 1fr auto 118px;
   gap: 1.2rem;
   align-items: center;
   min-height: 120px;
   padding: 1.4rem var(--pad);
+  color: inherit;
+  border: 0;
   border-bottom: 1px solid var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
-.practice-row:last-child { border-bottom: 0; }
 .practice-row h3 { margin: 0; font: 700 clamp(1.6rem, 3.2vw, 3.6rem)/.9 var(--display); letter-spacing: -.055em; }
 .practice-num, .practice-status { font-size: .67rem; }
 .practice-status { padding: .45rem .55rem; border: 1px solid var(--ink); }
-.practice-row.pending { color: rgba(17, 17, 15, .5); }
-.practice-row.active { color: var(--paper); background: var(--ink); }
-.practice-row.active .practice-status { color: var(--ink); border-color: var(--acid); background: var(--acid); }
-.practice-row.ready .practice-status { color: var(--ink); border-color: var(--signal); background: var(--signal); }
-.practice-row.wip { color: var(--ink); background: var(--acid); }
-.practice-row.wip .practice-status { color: var(--paper); background: var(--ink); }
+.practice-toggle { display: flex; justify-content: space-between; align-items: center; gap: .65rem; font-size: .62rem; }
+.practice-toggle b { font: 400 1.4rem/1 var(--mono); transition: transform .2s ease; }
+.practice-item.pending .practice-row { color: rgba(17, 17, 15, .5); }
+.practice-item.active .practice-row { color: var(--paper); background: var(--ink); }
+.practice-item.active .practice-status { color: var(--ink); border-color: var(--acid); background: var(--acid); }
+.practice-item.ready .practice-status { color: var(--ink); border-color: var(--signal); background: var(--signal); }
+.practice-item.wip .practice-row { color: var(--ink); background: var(--acid); }
+.practice-item.wip .practice-status { color: var(--paper); background: var(--ink); }
+.practice-item.is-open .practice-toggle b { transform: rotate(45deg); }
+.practice-row:hover h3,
+.practice-row:focus-visible h3 { transform: translateX(.3rem); }
+.practice-row h3 { transition: transform .2s ease; }
+.practice-row:focus-visible { outline: 3px solid var(--signal); outline-offset: -3px; }
+.practice-panel { padding: 1.2rem var(--pad) 2rem calc(var(--pad) + 62px); border-bottom: 1px solid var(--ink); background: var(--paper-2); }
+.practice-item.active .practice-panel { color: var(--paper); background: #252521; }
+.practice-item.wip .practice-panel { background: #c8eb42; }
+.practice-panel-label { margin: 0 0 1rem; font-size: .65rem; }
+.practice-links { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid currentColor; border-left: 1px solid currentColor; }
+.practice-links > a,
+.practice-empty {
+  display: flex;
+  min-height: 126px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  color: inherit;
+  text-decoration: none;
+}
+.practice-links > a:hover,
+.practice-links > a:focus-visible { color: var(--paper); background: var(--signal); }
+.practice-links > a span,
+.practice-empty span { font-size: .62rem; }
+.practice-links > a strong,
+.practice-empty strong { font: 700 clamp(1.2rem, 2vw, 2rem)/1 var(--display); letter-spacing: -.04em; }
+.practice-links > a em { font: normal .62rem/1 var(--mono); text-transform: uppercase; }
 
 .work-section { padding: clamp(4.5rem, 9vw, 10rem) var(--pad); background: var(--ink); color: var(--paper); }
 .work-header {
@@ -404,8 +440,12 @@ button { font: inherit; }
   .hero-system { top: 38%; width: 74vw; opacity: .48; }
   .hero-intro { max-width: 24rem; }
   .button { flex: 1 1 150px; }
-  .practice-row { grid-template-columns: 32px 1fr; min-height: 95px; }
+  .practice-row { grid-template-columns: 32px 1fr auto; min-height: 95px; }
   .practice-status { grid-column: 2; justify-self: start; }
+  .practice-toggle { grid-column: 3; grid-row: 1 / span 2; }
+  .practice-toggle span { display: none; }
+  .practice-panel { padding: 1rem var(--pad) 1.5rem; }
+  .practice-links { grid-template-columns: 1fr; }
   .work-section { padding-top: 4.5rem; }
   .work-header h2 { font-size: clamp(3.3rem, 17vw, 5.7rem); }
   .project-info { grid-template-columns: 1fr; }

@@ -15,6 +15,29 @@ navigation?.querySelectorAll('a').forEach((link) => {
   });
 });
 
+const practiceItems = document.querySelectorAll('[data-practice]');
+
+practiceItems.forEach((item) => {
+  const button = item.querySelector('.practice-row');
+  const panel = item.querySelector('.practice-panel');
+
+  button?.addEventListener('click', () => {
+    const willOpen = button.getAttribute('aria-expanded') !== 'true';
+
+    practiceItems.forEach((otherItem) => {
+      const otherButton = otherItem.querySelector('.practice-row');
+      const otherPanel = otherItem.querySelector('.practice-panel');
+      otherItem.classList.remove('is-open');
+      otherButton?.setAttribute('aria-expanded', 'false');
+      if (otherPanel) otherPanel.hidden = true;
+    });
+
+    item.classList.toggle('is-open', willOpen);
+    button.setAttribute('aria-expanded', String(willOpen));
+    if (panel) panel.hidden = !willOpen;
+  });
+});
+
 const updateMeter = () => {
   const max = document.documentElement.scrollHeight - window.innerHeight;
   const progress = max > 0 ? (window.scrollY / max) * 100 : 0;
